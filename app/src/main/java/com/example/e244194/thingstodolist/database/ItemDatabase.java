@@ -30,6 +30,6 @@ public abstract class ItemDatabase extends RoomDatabase {
         return sInstance;
     }
 
-    public abstract ItemDao taskDao();
+    public abstract ItemDao itemDao();
 
 }
