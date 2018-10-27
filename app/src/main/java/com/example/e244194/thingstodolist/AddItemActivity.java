@@ -1,5 +1,9 @@
 package com.example.e244194.thingstodolist;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,10 +18,10 @@ import java.util.Date;
 
 public class AddItemActivity extends AppCompatActivity {
 
-    // Extra for the task ID to be received in the intent
-    public static final String EXTRA_TASK_ID = "extraTaskId";
-    // Extra for the task ID to be received after rotation
-    public static final String INSTANCE_TASK_ID = "instanceTaskId";
+    // Extra for the item ID to be received in the intent
+    public static final String EXTRA_ITEM_ID = "extraItemId";
+    // Extra for the item ID to be received after rotation
+    public static final String INSTANCE_ITEM_ID = "instanceItemId";
     // Constants for priority
     public static final int PRIORITY_HIGH = 1;
     public static final int PRIORITY_MEDIUM = 2;
@@ -42,6 +46,39 @@ public class AddItemActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_item);
 
         initViews();
+
+        mDb = ItemDatabase.getInstance(getApplicationContext());
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_ITEM_ID)) {
+            mItemID = savedInstanceState.getInt(INSTANCE_ITEM_ID, DEFAULT_ITEM_ID);
+        }
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra(EXTRA_ITEM_ID)) {
+            mButton.setText(R.string.update_button);
+            if (mItemID == DEFAULT_ITEM_ID) {
+                // populate the UI
+                mItemID = intent.getIntExtra(EXTRA_ITEM_ID, DEFAULT_ITEM_ID);
+
+                // TODO (9) Remove the logging and the call to loadTaskById, this is done in the ViewModel now
+
+                // TODO (10) Declare a AddTaskViewModelFactory using mDb and mTaskId
+                AddTaskViewModelFactory factory = new AddTaskViewModelFactory(mDb, mItemID);
+
+                // TODO (11) Declare a AddTaskViewModel variable and initialize it by calling ViewModelProviders.of
+                // for that use the factory created above AddTaskViewModel
+                final AddTaskViewModel viewModel
+                        = ViewModelProviders.of(this, factory).get(AddTaskViewModel.class);
+                // TODO (12) Observe the LiveData object in the ViewModel. Use it also when removing the observer
+                viewModel.getTask().observe(this, new Observer<TaskEntry>() {
+                    @Override
+                    public void onChanged(@Nullable TaskEntry taskEntry) {
+                        viewModel.getTask().removeObserver(this);
+                        populateUI(taskEntry);
+                    }
+                });
+            }
+        }
 
     }
 
