@@ -1,5 +1,6 @@
 package com.example.e244194.thingstodolist;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -60,26 +61,29 @@ public class AddItemActivity extends AppCompatActivity {
                 // populate the UI
                 mItemID = intent.getIntExtra(EXTRA_ITEM_ID, DEFAULT_ITEM_ID);
 
-                // TODO (9) Remove the logging and the call to loadTaskById, this is done in the ViewModel now
+                AddItemViewModelFactory factory = new AddItemViewModelFactory(mDb, mItemID);
 
-                // TODO (10) Declare a AddTaskViewModelFactory using mDb and mTaskId
-                AddTaskViewModelFactory factory = new AddTaskViewModelFactory(mDb, mItemID);
-
-                // TODO (11) Declare a AddTaskViewModel variable and initialize it by calling ViewModelProviders.of
                 // for that use the factory created above AddTaskViewModel
-                final AddTaskViewModel viewModel
-                        = ViewModelProviders.of(this, factory).get(AddTaskViewModel.class);
+                final AddItemViewModel viewModel
+                        = ViewModelProviders.of(this, factory).get(AddItemViewModel.class);
                 // TODO (12) Observe the LiveData object in the ViewModel. Use it also when removing the observer
-                viewModel.getTask().observe(this, new Observer<TaskEntry>() {
+                viewModel.getItem().observe(this, new Observer<ItemEntry>() {
                     @Override
-                    public void onChanged(@Nullable TaskEntry taskEntry) {
-                        viewModel.getTask().removeObserver(this);
-                        populateUI(taskEntry);
+                    public void onChanged(@Nullable ItemEntry itemEntry) {
+                        viewModel.getItem().removeObserver(this);
+                        populateUI(itemEntry);
                     }
-                });
+                    });
+                } {
+
             }
         }
+    }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(INSTANCE_ITEM_ID, mItemID);
+        super.onSaveInstanceState(outState);
     }
 
     /**
@@ -98,6 +102,19 @@ public class AddItemActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * populateUI would be called to populate the UI when in update mode
+     *
+     * @param item the taskEntry to populate the UI
+     */
+    private void populateUI(ItemEntry item) {
+        if (item == null) {
+            return;
+        }
+
+        mEditText.setText(item.getDescription());
+        setPriorityInViews(item.getPriority());
+    }
     /**
      * onSaveButtonClicked is called when the "save" button is clicked.
      * It retrieves user input and inserts that new item data into the underlying database.
@@ -141,5 +158,23 @@ public class AddItemActivity extends AppCompatActivity {
                 priority = PRIORITY_LOW;
         }
         return priority;
+    }
+
+    /**
+     * setPriority is called when we receive a task from MainActivity
+     *
+     * @param priority the priority value
+     */
+    public void setPriorityInViews(int priority) {
+        switch (priority) {
+            case PRIORITY_HIGH:
+                ((RadioGroup) findViewById(R.id.radioGroup)).check(R.id.radButton1);
+                break;
+            case PRIORITY_MEDIUM:
+                ((RadioGroup) findViewById(R.id.radioGroup)).check(R.id.radButton2);
+                break;
+            case PRIORITY_LOW:
+                ((RadioGroup) findViewById(R.id.radioGroup)).check(R.id.radButton3);
+        }
     }
 }

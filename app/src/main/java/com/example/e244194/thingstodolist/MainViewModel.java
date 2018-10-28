@@ -23,7 +23,7 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         ItemDatabase database = ItemDatabase.getInstance(this.getApplication());
         Log.d(TAG, "Actively retrieving the items from the DataBase");
-        items = database.taskDao().loadAllItems();
+        items = database.itemDao().loadAllItems();
     }
 
     public LiveData<List<ItemEntry>> getItems() {

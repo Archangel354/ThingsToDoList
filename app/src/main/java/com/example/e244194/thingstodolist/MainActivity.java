@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemC
                     public void run() {
                         int position = viewHolder.getAdapterPosition();
                         List<ItemEntry> tasks = mAdapter.getEntries();
-                        mDb.taskDao().deleteItem(tasks.get(position));
+                        mDb.itemDao().deleteItem(tasks.get(position));
                     }
                 });
             }
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.ItemC
     public void onItemClickListener(int itemId) {
         // Launch AddTaskActivity adding the itemId as an extra in the intent
         Intent intent = new Intent(MainActivity.this, AddItemActivity.class);
-        intent.putExtra(AddItemActivity.EXTRA_TASK_ID, itemId);
+        intent.putExtra(AddItemActivity.EXTRA_ITEM_ID, itemId);
         startActivity(intent);
     }
 }
